@@ -386,6 +386,22 @@ class TestCurveFit(TestCase):
         y = [2, 4, 6, 8]
         assert_allclose(curve_fit(f_linear, x, y)[0], [2, 0], atol=1e-10)
 
+    def test_NaN_handling(self):
+        # Regression test for gh-3422
+        x = np.linspace(0, 4, 50)
+        for i in [10, 20, 30, 35]:
+            x[i] = np.NaN
+        
+        # perform a linear regression with curve fit
+        def lin(x, a0, a1):
+            return a1*x + a0
+        
+        y_lin = lin(x, 2.0, 1.0)
+        for i in [5, 25, 29, 36]:
+            y_lin[i] = np.NaN
+        
+        assert_raises(ValueError, curve_fit, lin, x, y_lin)
+
 
 class TestFixedPoint(TestCase):
 
